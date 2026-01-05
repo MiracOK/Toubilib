@@ -3,6 +3,23 @@ networks:
     driver: bridge
 
 services:
+
+  # service gateway
+  gateway.toubilib:
+    build:
+      context: build
+      dockerfile: 8.4-cli.Dockerfile
+    ports:
+      - '8888:80' 
+    volumes:
+      - ./app:/var/php
+    working_dir: /var/php
+    networks:
+      - toubilib.net
+    depends_on:
+      - api.toubilib 
+    command: sh -c "composer install && php -S 0.0.0.0:80 -t /var/php/gateway/public"
+    
   # service api.toubeelib : api pour la prise de rdv
   #
   api.toubilib:
@@ -20,7 +37,6 @@ services:
       - toubiprat.db
       - toubiauth.db
     command: sh -c "composer install && php -S 0.0.0.0:80 -t /var/php/public"
-
     # service toubiprat.db : base de données postgresql pour les praticiens
 
   toubiprat.db:
@@ -42,22 +58,21 @@ services:
     networks:
       - toubilib.net
     volumes:
-     # - ./sql:/var/sql
+      # - ./sql:/var/sql
       - ./sql/auth:/docker-entrypoint-initdb.d/
-
 
   toubirdv.db:
     image: 'postgres:latest'
     env_file: ./env/toubirdvdb.env
     ports:
-       - '5434:5432' 
-    networks: 
-       - toubilib.net
+      - '5434:5432'
+    networks:
+      - toubilib.net
     volumes:
       # - ./sql:/var/sql
-       - ./sql/rdv:/docker-entrypoint-initdb.d/
+      - ./sql/rdv:/docker-entrypoint-initdb.d/
 
-  toubipat.db: 
+  toubipat.db:
     image: 'postgres:latest'
     env_file: ./env/toubipatdb.env
     ports:
@@ -77,4 +92,3 @@ services:
       - '8080:8080'
     networks:
       - toubilib.net
-
