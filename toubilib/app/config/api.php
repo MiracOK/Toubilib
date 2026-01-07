@@ -96,7 +96,7 @@ return [
             allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
             maxAge: 3600,  //1h
             allowCredentials: true, 
-            strictMode: true  // Désactivé pour permettre les tests sans Origin header
+            strictMode: false  // Désactivé pour permettre les tests sans Origin header
         );
     },
 ];
