@@ -2,9 +2,25 @@
 declare(strict_types=1);
 
 use Slim\App;
-use toubilib\gateway\api\action\GetAllPraticiensAction;
+use toubilib\gateway\api\action\GetAllPraticiensActionV2;
+use toubilib\gateway\api\action\GetPraticienByIdActionV2;
+use toubilib\gateway\api\action\GenericGatewayAction;
+use toubilib\gateway\api\action\GenericRdvGatewayAction;
+use toubilib\gateway\api\middlewares\Cors;
 
 return function (App $app) {
     
-    $app->get('/praticiens', GetAllPraticiensAction::class);
+    // Appliquer le middleware CORS globalement
+    $app->add(Cors::class);
+    
+    // ==================== Exercice 1 & 2 & 3: Praticiens (microservice) ====================
+    $app->get('/praticiens', GetAllPraticiensActionV2::class)->setName('praticiens.list');
+    $app->get('/praticiens/{id}', GetPraticienByIdActionV2::class)->setName('praticiens.detail');
+    $app->get('/praticiens/{praticienId}/creneaux', GenericGatewayAction::class)->setName('praticiens.creneaux');
+    
+    // ==================== Exercice 4: RDV (microservice) ====================
+    $app->get('/rdvs/{id}', GenericRdvGatewayAction::class)->setName('rdvs.detail');
+    $app->post('/rdvs', GenericRdvGatewayAction::class)->setName('rdvs.create');
+    $app->patch('/rdvs/{id}', GenericRdvGatewayAction::class)->setName('rdvs.update');
+    $app->delete('/rdvs/{id}', GenericRdvGatewayAction::class)->setName('rdvs.delete');
 };
