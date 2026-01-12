@@ -12,4 +12,14 @@ return [
         'base_uri' => 'http://api.toubilib:80',
         'timeout' => 10.0,
     ],
+    
+    'api.praticiens' => [
+        'base_uri' => 'http://api.praticiens:80',
+        'timeout' => 10.0,
+    ],
+    
+    'api.rdv' => [
+        'base_uri' => 'http://api.rdv:80',
+        'timeout' => 10.0,
+    ],
 ];
