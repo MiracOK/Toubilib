@@ -25,7 +25,7 @@ class Cors implements MiddlewareInterface
         array $allowedMethods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
         array $allowedHeaders = ['Content-Type', 'Authorization', 'X-Requested-With'],
         int $maxAge = 3600,
-        bool $allowCredentials = true,
+        bool $allowCredentials = false,
         bool $strictMode = false
     ) {
         $this->allowedOrigins = $allowedOrigins;

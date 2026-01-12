@@ -95,7 +95,7 @@ return [
             allowedMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
             allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
             maxAge: 3600,  //1h
-            allowCredentials: true, 
+            allowCredentials: false, 
             strictMode: false  // Désactivé pour permettre les tests sans Origin header
         );
     },
