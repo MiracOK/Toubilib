@@ -6,12 +6,20 @@ use toubilib\gateway\api\action\GetAllPraticiensActionV2;
 use toubilib\gateway\api\action\GetPraticienByIdActionV2;
 use toubilib\gateway\api\action\GenericGatewayAction;
 use toubilib\gateway\api\action\GenericRdvGatewayAction;
+use toubilib\gateway\api\actions\SignupGatewayAction;
+use toubilib\gateway\api\actions\SigninGatewayAction;
+use toubilib\gateway\api\actions\RefreshGatewayAction;
 use toubilib\gateway\api\middlewares\Cors;
 
 return function (App $app) {
     
     // Appliquer le middleware CORS globalement
     $app->add(Cors::class);
+    
+    // ==================== Exercice 1 (TD 2.2): Authentication ====================
+    $app->post('/auth/signup', SignupGatewayAction::class)->setName('auth.signup');
+    $app->post('/auth/signin', SigninGatewayAction::class)->setName('auth.signin');
+    $app->post('/auth/refresh', RefreshGatewayAction::class)->setName('auth.refresh');
     
     // ==================== Exercice 1 & 2 & 3: Praticiens (microservice) ====================
     $app->get('/praticiens', GetAllPraticiensActionV2::class)->setName('praticiens.list');
