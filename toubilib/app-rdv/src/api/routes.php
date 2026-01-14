@@ -6,46 +6,17 @@ use Psr\Http\Message\ServerRequestInterface;
 use Slim\App;
 use toubilib\api\actions\AnnulerRdvAction;
 use toubilib\api\actions\CreateRdvAction;
-use toubilib\api\actions\GetHistoriquePatientAction;
-use toubilib\api\actions\ListerPatientAction;
-use toubilib\api\actions\ListerPraticienAction;
-use toubilib\api\actions\ListerCreneauDejaPraticien;
 use toubilib\api\actions\ListerRDVbyId;
-use toubilib\api\actions\PatientDetailAction;
-use toubilib\api\actions\PraticienDetailAction;
 use toubilib\api\actions\UpdateRdvStatusAction;
-use toubilib\api\actions\SignupAction;
-use toubilib\api\actions\SigninAction;
-use toubilib\api\actions\RefreshTokenAction;
 
 use toubilib\api\middlewares\ValidateInputRdv;
-
 
 use toubilib\core\application\middlewares\AuthnMiddleware;
 use toubilib\core\application\middlewares\AuthzMiddleware;
 
 return function (App $app): App {
 
-    $app->post('/auth/signin', SigninAction::class)->setName('auth.signin');
-    $app->post('/auth/signup', SignupAction::class)->setName('auth.signup');
-    $app->post('/auth/refresh', RefreshTokenAction::class)->setName('auth.refresh');
-
-    $app->get('/praticiens', ListerPraticienAction::class);
-    $app->get('/praticiens/{id}', PraticienDetailAction::class);
-    $app->get('/patients', ListerPatientAction::class);
-    $app->get('/patients/{id}', PatientDetailAction::class);
     
-    // Opération 11: historique patient (authentification requise)
-    $app->get('/patients/{patientId}/consultations', GetHistoriquePatientAction::class)
-        ->setName('patient.consultations')
-        ->add(AuthzMiddleware::class)
-        ->add(AuthnMiddleware::class);
-
-    // Opération 7: agenda praticien (authentification requise)
-    $app->get('/praticiens/{praticienId}/creneaux', ListerCreneauDejaPraticien::class)
-        ->setName('agenda')
-        ->add(AuthzMiddleware::class)
-        ->add(AuthnMiddleware::class);
     
     // Opération 4,6: consulter un RDV (authentification requise)
     $app->get('/rdvs/{id}', ListerRDVbyId::class)

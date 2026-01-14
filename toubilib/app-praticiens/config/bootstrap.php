@@ -32,7 +32,6 @@ $app = AppFactory::createFromContainer($c);
 
 
 $app->addBodyParsingMiddleware();
-$app->add(Cors::class);
 $app->addRoutingMiddleware();
 
 // Définit si on affiche les détails d'erreur : priorité .env DISPLAY_ERROR_DETAILS, sinon true pour dev
