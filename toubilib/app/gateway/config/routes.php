@@ -2,9 +2,9 @@
 declare(strict_types=1);
 
 use Slim\App;
-use toubilib\gateway\api\action\GetAllPraticiensActionV2;
-use toubilib\gateway\api\action\GetPraticienByIdActionV2;
-use toubilib\gateway\api\action\GenericGatewayAction;
+use toubilib\gateway\api\action\GetAllPraticiensAction;
+use toubilib\gateway\api\action\GetPraticienByIdAction;
+use toubilib\gateway\api\action\GetCreneauxPraticienAction;
 use toubilib\gateway\api\action\GenericRdvGatewayAction;
 use toubilib\gateway\api\actions\SignupGatewayAction;
 use toubilib\gateway\api\actions\SigninGatewayAction;
@@ -22,9 +22,9 @@ return function (App $app) {
     $app->post('/auth/refresh', RefreshGatewayAction::class)->setName('auth.refresh');
     
     // ==================== Exercice 1 & 2 & 3: Praticiens (microservice) ====================
-    $app->get('/praticiens', GetAllPraticiensActionV2::class)->setName('praticiens.list');
-    $app->get('/praticiens/{id}', GetPraticienByIdActionV2::class)->setName('praticiens.detail');
-    $app->get('/praticiens/{praticienId}/creneaux', GenericGatewayAction::class)->setName('praticiens.creneaux');
+    $app->get('/praticiens', GetAllPraticiensAction::class)->setName('praticiens.list');
+    $app->get('/praticiens/{id}', GetPraticienByIdAction::class)->setName('praticiens.detail');
+    $app->get('/praticiens/{praticienId}/creneaux', GetCreneauxPraticienAction::class)->setName('praticiens.creneaux');
     
     // ==================== Exercice 4: RDV (microservice) ====================
     $app->get('/rdvs/{id}', GenericRdvGatewayAction::class)->setName('rdvs.detail');

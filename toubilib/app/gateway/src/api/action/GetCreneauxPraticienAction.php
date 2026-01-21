@@ -10,9 +10,8 @@ use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\ClientInterface;
 use Psr\Container\ContainerInterface;
-use Slim\Exception\HttpNotFoundException;
 
-class GetPraticienByIdActionV2
+class GetCreneauxPraticienAction
 {
     private ClientInterface $praticienClient;
     
@@ -27,8 +26,20 @@ class GetPraticienByIdActionV2
         array $args
     ): ResponseInterface {
         
-        // Récupérer l'ID du praticien
-        $id = $args['id'];
+        $praticienId = $args['praticienId'] ?? null;
+        
+        if (!$praticienId) {
+            $response->getBody()->write(json_encode([
+                'error' => 'missing_parameter',
+                'message' => 'Le paramètre praticienId est requis'
+            ]));
+            return $response
+                ->withStatus(400)
+                ->withHeader('Content-Type', 'application/json');
+        }
+        
+        // Récupérer les query params
+        $queryParams = $request->getQueryParams();
         
         // Préparer les options pour Guzzle
         $options = [
@@ -37,9 +48,23 @@ class GetPraticienByIdActionV2
             ]
         ];
         
+        if (!empty($queryParams)) {
+            $options['query'] = $queryParams;
+        }
+        
+        // Ajouter le token d'authentification s'il existe
+        $authHeader = $request->getHeaderLine('Authorization');
+        if ($authHeader) {
+            $options['headers']['Authorization'] = $authHeader;
+        }
+        
         try {
             // Appeler le microservice Praticiens
-            $apiResponse = $this->praticienClient->request('GET', "/praticiens/{$id}", $options);
+            $apiResponse = $this->praticienClient->request(
+                'GET', 
+                "/praticiens/{$praticienId}/creneaux", 
+                $options
+            );
             
             // Récupérer la réponse
             $statusCode = $apiResponse->getStatusCode();
@@ -65,19 +90,13 @@ class GetPraticienByIdActionV2
         } catch (RequestException $e) {
             if ($e->hasResponse()) {
                 $statusCode = $e->getResponse()->getStatusCode();
-                
-                // Gérer le cas 404 (praticien non trouvé)
-                if ($statusCode === 404) {
-                    throw new HttpNotFoundException($request, "Praticien {$id} non trouvé");
-                }
-                
                 $body = $e->getResponse()->getBody()->getContents();
             } else {
                 $statusCode = 500;
                 $body = json_encode([
                     'type' => 'error',
                     'error' => 500,
-                    'message' => 'Erreur lors de la récupération du praticien'
+                    'message' => 'Erreur lors de la récupération des crénéaux'
                 ]);
             }
             

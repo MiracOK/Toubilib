@@ -10,8 +10,9 @@ use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\ClientInterface;
 use Psr\Container\ContainerInterface;
+use Slim\Exception\HttpNotFoundException;
 
-class GetAllPraticiensActionV2
+class GetPraticienByIdAction
 {
     private ClientInterface $praticienClient;
     
@@ -26,8 +27,8 @@ class GetAllPraticiensActionV2
         array $args
     ): ResponseInterface {
         
-        // Récupérer les query params
-        $queryParams = $request->getQueryParams();
+        // Récupérer l'ID du praticien
+        $id = $args['id'];
         
         // Préparer les options pour Guzzle
         $options = [
@@ -36,13 +37,9 @@ class GetAllPraticiensActionV2
             ]
         ];
         
-        if (!empty($queryParams)) {
-            $options['query'] = $queryParams;
-        }
-        
         try {
             // Appeler le microservice Praticiens
-            $apiResponse = $this->praticienClient->request('GET', '/praticiens', $options);
+            $apiResponse = $this->praticienClient->request('GET', "/praticiens/{$id}", $options);
             
             // Récupérer la réponse
             $statusCode = $apiResponse->getStatusCode();
@@ -68,13 +65,19 @@ class GetAllPraticiensActionV2
         } catch (RequestException $e) {
             if ($e->hasResponse()) {
                 $statusCode = $e->getResponse()->getStatusCode();
+                
+                // Gérer le cas 404 (praticien non trouvé)
+                if ($statusCode === 404) {
+                    throw new HttpNotFoundException($request, "Praticien {$id} non trouvé");
+                }
+                
                 $body = $e->getResponse()->getBody()->getContents();
             } else {
                 $statusCode = 500;
                 $body = json_encode([
                     'type' => 'error',
                     'error' => 500,
-                    'message' => 'Erreur lors de la récupération des praticiens'
+                    'message' => 'Erreur lors de la récupération du praticien'
                 ]);
             }
             

@@ -8,23 +8,15 @@ use toubilib\api\actions\ListerPraticienAction;
 use toubilib\api\actions\ListerCreneauDejaPraticien;
 use toubilib\api\actions\PraticienDetailAction;
 
-
-use toubilib\core\application\middlewares\AuthnMiddleware;
-use toubilib\core\application\middlewares\AuthzMiddleware;
-
 return function (App $app): App {
 
    
     $app->get('/praticiens', ListerPraticienAction::class);
     $app->get('/praticiens/{id}', PraticienDetailAction::class);
     
-
-
-    // Opération 7: agenda praticien (authentification requise)
+    // Opération 7: agenda praticien (authentification gérée par le gateway)
     $app->get('/praticiens/{praticienId}/creneaux', ListerCreneauDejaPraticien::class)
-        ->setName('agenda')
-        ->add(AuthzMiddleware::class)
-        ->add(AuthnMiddleware::class);
+        ->setName('agenda');
 
    
     // Preflight CORS
