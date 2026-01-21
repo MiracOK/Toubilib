@@ -10,6 +10,7 @@ use toubilib\gateway\api\middlewares\Cors;
 return [
 
     Cors::class => fn() => new Cors(),
+    
     // Client par défaut pour l'API Toubilib complète
     ClientInterface::class => function (ContainerInterface $c) {
         $settings = $c->get('settings');

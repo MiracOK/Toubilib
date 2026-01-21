@@ -14,6 +14,7 @@ return function () {
     ]);
     
     $containerBuilder->addDefinitions(__DIR__ . '/services.php');
+    $containerBuilder->addDefinitions(__DIR__ . '/api.php');
     
     $container = $containerBuilder->build();
 

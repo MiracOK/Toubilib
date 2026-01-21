@@ -5,7 +5,10 @@ use Slim\App;
 use toubilib\gateway\api\action\GetAllPraticiensAction;
 use toubilib\gateway\api\action\GetPraticienByIdAction;
 use toubilib\gateway\api\action\GetCreneauxPraticienAction;
-use toubilib\gateway\api\action\GenericRdvGatewayAction;
+use toubilib\gateway\api\action\GetRdvByIdAction;
+use toubilib\gateway\api\action\CreateRdvGatewayAction;
+use toubilib\gateway\api\action\UpdateRdvStatusGatewayAction;
+use toubilib\gateway\api\action\DeleteRdvGatewayAction;
 use toubilib\gateway\api\actions\SignupGatewayAction;
 use toubilib\gateway\api\actions\SigninGatewayAction;
 use toubilib\gateway\api\actions\RefreshGatewayAction;
@@ -27,8 +30,8 @@ return function (App $app) {
     $app->get('/praticiens/{praticienId}/creneaux', GetCreneauxPraticienAction::class)->setName('praticiens.creneaux');
     
     // ==================== Exercice 4: RDV (microservice) ====================
-    $app->get('/rdvs/{id}', GenericRdvGatewayAction::class)->setName('rdvs.detail');
-    $app->post('/rdvs', GenericRdvGatewayAction::class)->setName('rdvs.create');
-    $app->patch('/rdvs/{id}', GenericRdvGatewayAction::class)->setName('rdvs.update');
-    $app->delete('/rdvs/{id}', GenericRdvGatewayAction::class)->setName('rdvs.delete');
+    $app->get('/rdvs/{id}', GetRdvByIdAction::class)->setName('rdvs.detail');
+    $app->post('/rdvs', CreateRdvGatewayAction::class)->setName('rdvs.create');
+    $app->patch('/rdvs/{id}', UpdateRdvStatusGatewayAction::class)->setName('rdvs.update');
+    $app->delete('/rdvs/{id}', DeleteRdvGatewayAction::class)->setName('rdvs.delete');
 };

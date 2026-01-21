@@ -42,6 +42,21 @@ return [
         return new \PDO($dsn, $user, $password, [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION]);
     },
 
+    'toubiprat.pdo' => function (ContainerInterface $c) {
+        $config = parse_ini_file($c->get('toubiprat.db.config'));
+        $dsn = "{$config['driver']}:host={$config['host']};dbname={$config['database']}";
+        $user = $config['username'];
+        $password = $config['password'];
+        return new \PDO($dsn, $user, $password, [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION]);
+    },
+
+    'toubipat.pdo' => function (ContainerInterface $c) {
+        $config = parse_ini_file($c->get('toubipat.db.config'));
+        $dsn = "{$config['driver']}:host={$config['host']};dbname={$config['database']}";
+        $user = $config['username'];
+        $password = $config['password'];
+        return new \PDO($dsn, $user, $password, [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION]);
+    },
     
     RdvRepositoryInterface::class => fn(ContainerInterface $c) => new PDORdvRepository(
         $c->get('toubirdv.pdo'),  

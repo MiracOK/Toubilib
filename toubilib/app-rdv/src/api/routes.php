@@ -20,28 +20,20 @@ return function (App $app): App {
     
     // Opération 4,6: consulter un RDV (authentification requise)
     $app->get('/rdvs/{id}', ListerRDVbyId::class)
-        ->setName('rdv.get')
-        ->add(AuthzMiddleware::class)
-        ->add(AuthnMiddleware::class);
-    
+        ->setName('rdv.get');
     // Opération 6: créer un RDV (authentification requise - patient seulement)
     $app->post('/rdvs', CreateRdvAction::class)
         ->setName('rdv.create')
-        ->add(ValidateInputRdv::class)
-        ->add(AuthzMiddleware::class)
-        ->add(AuthnMiddleware::class);
-    
+        ->add(ValidateInputRdv::class);
+
     // Opération 5: annuler un RDV (authentification requise - patient du RDV seulement)
     $app->delete('/rdvs/{id}', AnnulerRdvAction::class)
-        ->setName('rdv.delete')
-        ->add(AuthzMiddleware::class)
-        ->add(AuthnMiddleware::class);
+        ->setName('rdv.delete');
 
     // Opération 10: modifier statut RDV (authentification requise - praticien du RDV seulement)
     $app->patch('/rdvs/{id}', UpdateRdvStatusAction::class)
-        ->setName('rdv.update')
-        ->add(AuthzMiddleware::class)
-        ->add(AuthnMiddleware::class);
+        ->setName('rdv.update');
+        
 
    
     // Preflight CORS
