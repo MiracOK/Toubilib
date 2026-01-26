@@ -10,7 +10,7 @@ use toubilib\gateway\api\middlewares\Cors;
 return [
 
     Cors::class => fn() => new Cors(),
-    
+
     // Client par défaut pour l'API Toubilib complète
     ClientInterface::class => function (ContainerInterface $c) {
         $settings = $c->get('settings');
@@ -37,6 +37,15 @@ return [
         return new Client([
             'base_uri' => $settings['api.rdv']['base_uri'],
             'timeout' => $settings['api.rdv']['timeout'],
+            'http_errors' => false,
+        ]);
+    },
+
+    'client.auth' => function (ContainerInterface $c) {
+        $settings = $c->get('settings');
+        return new Client([
+            'base_uri' => $settings['api.auth']['base_uri'],
+            'timeout' => $settings['api.auth']['timeout'],
             'http_errors' => false,
         ]);
     },

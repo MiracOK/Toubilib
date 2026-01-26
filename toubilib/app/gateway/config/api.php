@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Psr\Container\ContainerInterface;
+use toubilib\gateway\api\action\ValidateTokenAction;
 use toubilib\gateway\api\action\GetAllPraticiensAction;
 use toubilib\gateway\api\action\GetPraticienByIdAction;
 use toubilib\gateway\api\action\GetCreneauxPraticienAction;
@@ -10,16 +11,18 @@ use toubilib\gateway\api\action\GetRdvByIdAction;
 use toubilib\gateway\api\action\CreateRdvGatewayAction;
 use toubilib\gateway\api\action\UpdateRdvStatusGatewayAction;
 use toubilib\gateway\api\action\DeleteRdvGatewayAction;
-use toubilib\gateway\api\actions\SignupGatewayAction;
-use toubilib\gateway\api\actions\SigninGatewayAction;
-use toubilib\gateway\api\actions\RefreshGatewayAction;
+use toubilib\gateway\api\action\RefreshGatewayAction;
+use toubilib\gateway\api\action\SigninGatewayAction;
+use toubilib\gateway\api\action\SignupGatewayAction;
 
 return [
     // // Auth Actions
-    // SignupGatewayAction::class => fn(ContainerInterface $c) => new SignupGatewayAction(),
-    // SigninGatewayAction::class => fn(ContainerInterface $c) => new SigninGatewayAction(),
-    // RefreshGatewayAction::class => fn(ContainerInterface $c) => new RefreshGatewayAction(),
+    SignupGatewayAction::class => fn(ContainerInterface $c) => new SignupGatewayAction($c->get('client.auth')),
+    SigninGatewayAction::class => fn(ContainerInterface $c) => new SigninGatewayAction($c->get('client.auth')),
+    RefreshGatewayAction::class => fn(ContainerInterface $c) => new RefreshGatewayAction($c->get('client.auth')),
 
+
+    ValidateTokenAction::class => fn(ContainerInterface $c) => new ValidateTokenAction($c->get('client.auth')),
     // Praticien Actions
     GetAllPraticiensAction::class => fn(ContainerInterface $c) => new GetAllPraticiensAction($c),
     GetPraticienByIdAction::class => fn(ContainerInterface $c) => new GetPraticienByIdAction($c),

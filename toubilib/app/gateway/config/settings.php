@@ -22,4 +22,9 @@ return [
         'base_uri' => 'http://api.rdv:80',
         'timeout' => 10.0,
     ],
+
+    'api.auth' => [
+    'base_uri' => 'http://api.auth:80',
+    'timeout' => 10.0,
+    ],
 ];

@@ -9,9 +9,10 @@ use toubilib\gateway\api\action\GetRdvByIdAction;
 use toubilib\gateway\api\action\CreateRdvGatewayAction;
 use toubilib\gateway\api\action\UpdateRdvStatusGatewayAction;
 use toubilib\gateway\api\action\DeleteRdvGatewayAction;
-use toubilib\gateway\api\actions\SignupGatewayAction;
-use toubilib\gateway\api\actions\SigninGatewayAction;
-use toubilib\gateway\api\actions\RefreshGatewayAction;
+use toubilib\gateway\api\action\SignupGatewayAction;
+use toubilib\gateway\api\action\SigninGatewayAction;
+use toubilib\gateway\api\action\RefreshGatewayAction;
+use toubilib\gateway\api\action\ValidateTokenAction;
 use toubilib\gateway\api\middlewares\Cors;
 
 return function (App $app) {
@@ -23,6 +24,8 @@ return function (App $app) {
     $app->post('/auth/signup', SignupGatewayAction::class)->setName('auth.signup');
     $app->post('/auth/signin', SigninGatewayAction::class)->setName('auth.signin');
     $app->post('/auth/refresh', RefreshGatewayAction::class)->setName('auth.refresh');
+
+    $app->post('/tokens/validate', ValidateTokenAction::class)->setName('tokens.validate');
     
     // ==================== Exercice 1 & 2 & 3: Praticiens (microservice) ====================
     $app->get('/praticiens', GetAllPraticiensAction::class)->setName('praticiens.list');
