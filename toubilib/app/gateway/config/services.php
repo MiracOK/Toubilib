@@ -5,11 +5,16 @@ declare(strict_types=1);
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use Psr\Container\ContainerInterface;
+use toubilib\gateway\api\middlewares\AuthnMiddleware;
+use toubilib\gateway\api\middlewares\AuthzMiddleware;
 use toubilib\gateway\api\middlewares\Cors;
 
 return [
 
     Cors::class => fn() => new Cors(),
+
+    AuthnMiddleware::class => fn(ContainerInterface $c) => new AuthnMiddleware($c->get('client.auth')),
+    AuthzMiddleware::class => fn(ContainerInterface $c) => new AuthzMiddleware(),
 
     // Client par défaut pour l'API Toubilib complète
     ClientInterface::class => function (ContainerInterface $c) {

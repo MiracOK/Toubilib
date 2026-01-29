@@ -25,7 +25,7 @@ final class UpdateRdvStatusGatewayAction
         array $args
     ): ResponseInterface {
         $rdvId = (string)($args['id'] ?? '');
-        
+
         if ($rdvId === '') {
             $response->getBody()->write(json_encode([
                 'error' => 'invalid_id',
@@ -38,7 +38,7 @@ final class UpdateRdvStatusGatewayAction
 
         try {
             $body = $request->getParsedBody();
-            
+
             $options = [
                 'headers' => [],
                 'json' => $body ?? []
@@ -48,18 +48,20 @@ final class UpdateRdvStatusGatewayAction
             if ($request->hasHeader('Authorization')) {
                 $options['headers']['Authorization'] = $request->getHeaderLine('Authorization');
             }
+            if ($request->hasHeader('X-Authenticated-User')) {
+                $options['headers']['X-Authenticated-User'] = $request->getHeaderLine('X-Authenticated-User');
+            }
 
             // Appel au microservice
             $apiResponse = $this->rdvClient->request('PATCH', "/rdvs/{$rdvId}", $options);
-            
+
             $statusCode = $apiResponse->getStatusCode();
             $bodyContent = $apiResponse->getBody()->getContents();
-            
+
             $response->getBody()->write($bodyContent);
             return $response
                 ->withStatus($statusCode)
                 ->withHeader('Content-Type', 'application/json');
-                
         } catch (ConnectException $e) {
             $response->getBody()->write(json_encode([
                 'error' => 'service_unavailable',
@@ -68,7 +70,6 @@ final class UpdateRdvStatusGatewayAction
             return $response
                 ->withStatus(503)
                 ->withHeader('Content-Type', 'application/json');
-                
         } catch (RequestException $e) {
             if ($e->hasResponse()) {
                 $statusCode = $e->getResponse()->getStatusCode();
@@ -80,7 +81,7 @@ final class UpdateRdvStatusGatewayAction
                     'message' => 'Erreur lors du traitement'
                 ], JSON_UNESCAPED_UNICODE);
             }
-            
+
             $response->getBody()->write($bodyContent);
             return $response
                 ->withStatus($statusCode)

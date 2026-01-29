@@ -33,12 +33,14 @@ final class CreateRdvGatewayAction
                 'json' => $body ?? []
             ];
 
-            // Transférer le header Authorization si présent
             if ($request->hasHeader('Authorization')) {
                 $options['headers']['Authorization'] = $request->getHeaderLine('Authorization');
             }
 
-            // Appel au microservice
+            if ($request->hasHeader('X-Authenticated-User')) {
+                $options['headers']['X-Authenticated-User'] = $request->getHeaderLine('X-Authenticated-User');
+            }
+
             $apiResponse = $this->rdvClient->request('POST', '/rdvs', $options);
             
             $statusCode = $apiResponse->getStatusCode();
