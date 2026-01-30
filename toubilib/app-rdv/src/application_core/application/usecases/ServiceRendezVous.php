@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace toubilib\core\application\usecases;
@@ -121,7 +122,7 @@ class ServiceRendezVous implements ServiceRendezVousInterface
             }
         }
 
-       //horraire + jour
+        //horraire + jour
         $dow = (int)$debut->format('N');
         if ($dow > 5) {
             return ['success' => false, 'code' => 'day_not_allowed', 'message' => 'Jour non ouvré'];
@@ -160,10 +161,18 @@ class ServiceRendezVous implements ServiceRendezVousInterface
         if ($savedId === null) {
             return ['success' => false, 'code' => 'save_failed', 'message' => 'Échec sauvegarde RDV'];
         }
-         try {
+        try {
             error_log('[AMQP] preparing to publish rdv.created for id=' . $savedId);
             $rdv = $this->rdvRepository->findById($savedId) ?? [];
-
+            $emails = [];
+            if (method_exists($this->rdvRepository, 'getEmailsForRdv')) {
+                $emails = $this->rdvRepository->getEmailsForRdv($savedId);
+                if (is_array($emails)) {
+                    // merge emails into $rdv (keeps existing keys if present)
+                    $rdv = array_merge($rdv, array_intersect_key($emails, array_flip(['patient_email', 'praticien_email', 'patient', 'praticien'])));
+                }
+            }
+            error_log('[AMQP] rdv payload: ' . json_encode($rdv, JSON_UNESCAPED_UNICODE));
             $eventBase = [
                 'event_id' => bin2hex(random_bytes(16)),
                 'event_type' => 'rdv.created',
@@ -189,20 +198,24 @@ class ServiceRendezVous implements ServiceRendezVousInterface
             $patientEvent['recipient'] = [
                 'type' => 'patient',
                 'id' => $rdv['patient_id'] ?? null,
-                'email' => $rdv['patient_email'] ?? null,
+                'email' => $rdv['patient_email'] ?? ($rdv['patient']['email'] ?? null),
             ];
+            $patientEvent['from'] = $rdv['praticien_email'] ?? ($rdv['praticien']['email'] ?? null);
             $msgPatient = new AMQPMessage(json_encode($patientEvent), ['content_type' => 'application/json', 'delivery_mode' => 2]);
             $ch->basic_publish($msgPatient, $exchange, 'rdv.created.patient.email');
-            error_log('[AMQP] published rdv.created.patient.email');
+            error_log('[AMQP] published rdv.created.patient.email for id=' . $savedId);
 
+            // praticien event
             $pratEvent = $eventBase;
             $pratEvent['recipient'] = [
                 'type' => 'praticien',
                 'id' => $rdv['praticien_id'] ?? null,
+                'email' => $rdv['praticien_email'] ?? ($rdv['praticien']['email'] ?? null),
             ];
+            $pratEvent['from'] = $rdv['patient_email'] ?? ($rdv['patient']['email'] ?? null);
             $msgPrat = new AMQPMessage(json_encode($pratEvent), ['content_type' => 'application/json', 'delivery_mode' => 2]);
             $ch->basic_publish($msgPrat, $exchange, 'rdv.created.praticien.email');
-            error_log('[AMQP] published rdv.created.praticien.email');
+            error_log('[AMQP] published rdv.created.praticien.email for id=' . $savedId);
 
             $ch->close();
             $conn->close();
@@ -282,12 +295,12 @@ class ServiceRendezVous implements ServiceRendezVousInterface
     public function getHistoriqueConsultations(string $patientId): array
     {
         $rdvs = $this->rdvRepository->getRendezVousByPatientId($patientId);
-        
+
         $dtos = [];
         foreach ($rdvs as $rdv) {
             $dtos[] = \toubilib\core\application\ports\api\dto\RendezVousHistoriqueDTO::fromArray($rdv);
         }
-        
+
         return $dtos;
     }
 }

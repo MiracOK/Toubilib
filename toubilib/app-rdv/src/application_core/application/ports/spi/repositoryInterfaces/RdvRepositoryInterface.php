@@ -36,6 +36,9 @@ interface RdvRepositoryInterface
      */
     public function updateStatus(string $id, int $status): bool;
 
+
+    public function getEmailsForRdv(string $id): array;
+
     /**
      * Récupère l'historique des rendez-vous d'un patient
      * 

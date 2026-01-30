@@ -163,6 +163,26 @@ services:
     ports:
       - '1080:1080'
 
+  mail.sender:
+    build:
+      context: build
+      dockerfile: 8.4-cli.Dockerfile
+    volumes:
+      - ./app-mail:/var/php
+    working_dir: /var/php
+    networks:
+      - toubilib.net
+    depends_on:
+      - rabbitmq
+      - mail.toubi
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: toubi
+      RABBITMQ_PASS: toubi
+      MAILER_HOST: mail.toubi
+      MAILER_PORT: 1025
+    command: sh -c "composer install --no-interaction --prefer-dist && php /var/php/scripts/consumer.php"
 
   #
   # service administration des bases sql

@@ -154,6 +154,72 @@ class PDORdvRepository implements RdvRepositoryInterface
         return false;
     }
 
+    public function getEmailsForRdv(string $id): array
+{
+    $out = [
+        'patient_email' => null,
+        'praticien_email' => null,
+        'patient' => null,
+        'praticien' => null,
+    ];
+
+    try {
+        $sql = 'SELECT patient_id, patient_email, praticien_id FROM rdv WHERE id = :id LIMIT 1';
+        $stmt = $this->pdoRdv->prepare($sql);
+        $stmt->execute([':id' => $id]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        if (!$row) {
+            return $out;
+        }
+
+        $out['patient_email'] = $row['patient_email'] ?? null;
+        $patientId = $row['patient_id'] ?? null;
+        $pratId = $row['praticien_id'] ?? null;
+
+        if (!empty($pratId)) {
+            try {
+                $sqlPrat = 'SELECT id, nom, prenom, email, telephone, titre FROM praticien WHERE id = :id LIMIT 1';
+                $stmtPrat = $this->pdoPrat->prepare($sqlPrat);
+                $stmtPrat->execute([':id' => $pratId]);
+                $prat = $stmtPrat->fetch(\PDO::FETCH_ASSOC);
+                if ($prat) {
+                    $out['praticien'] = $prat;
+                    $out['praticien_email'] = $prat['email'] ?? $out['praticien_email'];
+                }
+            } catch (\Throwable $e) {
+                if ($this->logger) {
+                    $this->logger->warning('PDORdvRepository: could not fetch praticien for emails', ['id' => $pratId, 'err' => $e->getMessage()]);
+                }
+            }
+        }
+
+        if (empty($out['patient_email']) && !empty($patientId)) {
+            $tables = ['patient', 'patients', 'dossiers', 'dossier'];
+            foreach ($tables as $t) {
+                try {
+                    $sqlPat = "SELECT id, email, telephone, nom, prenom FROM {$t} WHERE id = :id LIMIT 1";
+                    $stmtPat = $this->pdoPat->prepare($sqlPat);
+                    $stmtPat->execute([':id' => $patientId]);
+                    $pat = $stmtPat->fetch(\PDO::FETCH_ASSOC);
+                    if ($pat) {
+                        $out['patient'] = $pat;
+                        $out['patient_email'] = $pat['email'] ?? $out['patient_email'];
+                        break;
+                    }
+                } catch (\PDOException $e) {
+                    continue;
+                }
+            }
+        }
+    } catch (\Throwable $e) {
+        if ($this->logger) {
+            $this->logger->error('PDORdvRepository:getEmailsForRdv failed', ['id' => $id, 'err' => $e->getMessage()]);
+        }
+    }
+
+    return $out;
+}
+
     public function getMotifsForPraticien(string $praticienId): array
     {
         try {
