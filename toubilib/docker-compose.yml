@@ -10,16 +10,16 @@ services:
       context: build
       dockerfile: 8.4-cli.Dockerfile
     ports:
-      - '8888:80' 
+      - '8888:80'
     volumes:
       - ./app:/var/php
     working_dir: /var/php
     networks:
       - toubilib.net
     depends_on:
-      - api.toubilib 
+      - api.toubilib
     command: sh -c "composer install && php -S 0.0.0.0:80 -t /var/php/gateway/public"
-    
+
   # service api.toubeelib : api pour la prise de rdv
   #
   api.toubilib:
@@ -131,6 +131,38 @@ services:
     volumes:
       # - ./sql:/var/sql
       - ./sql/pat:/docker-entrypoint-initdb.d/
+
+  rabbitmq:
+    image: rabbitmq:4-management
+  #    build:
+  #      context: build
+  #      dockerfile: rabbit-stomp.Dockerfile
+    ports:
+      - '15672:15672'
+    #      - '15674:15674'
+      - '5672:5672'
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 8s
+      timeout: 30s
+      retries: 3
+    networks:
+    - toubilib.net
+    volumes:
+    - ./rabbitmq.toubi:/var/lib/rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: toubi
+      RABBITMQ_DEFAULT_PASS: toubi
+
+  mail.toubi:
+    build:
+      context: build
+      dockerfile: mailcatcher.Dockerfile
+    networks:
+      - toubilib.net
+    ports:
+      - '1080:1080'
+
 
   #
   # service administration des bases sql

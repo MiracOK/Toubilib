@@ -88,15 +88,15 @@ return [
         return new AuthzMiddleware($c->get(AuthzServiceInterface::class));
     },
     
-    Cors::class => function (ContainerInterface $c) {
+    // Cors::class => function (ContainerInterface $c) {
         
-        return new Cors(
-            allowedOrigins: ['http://localhost:6080'],  // ['http://localhost:6080']
-            allowedMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-            allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-            maxAge: 3600,  //1h
-            allowCredentials: true, 
-            strictMode: false  // Désactivé pour permettre les tests sans Origin header
-        );
-    },
+    //     return new Cors(
+    //         allowedOrigins: ['http://localhost:6080'],  // ['http://localhost:6080']
+    //         allowedMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    //         allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    //         maxAge: 3600,  //1h
+    //         allowCredentials: true, 
+    //         strictMode: false  // Désactivé pour permettre les tests sans Origin header
+    //     );
+    // },
 ];
