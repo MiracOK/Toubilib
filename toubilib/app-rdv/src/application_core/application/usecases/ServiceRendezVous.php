@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace toubilib\core\application\usecases;
 
+use PhpAmqpLib\Connection\AMQPStreamConnection;
+use PhpAmqpLib\Message\AMQPMessage;
 use toubilib\core\application\ports\spi\repositoryInterfaces\ServiceRendezVousInterface;
 use toubilib\core\application\ports\spi\repositoryInterfaces\RdvRepositoryInterface;
 use toubilib\core\application\ports\api\dto\InputRendezVousDTO;
@@ -158,6 +160,57 @@ class ServiceRendezVous implements ServiceRendezVousInterface
         if ($savedId === null) {
             return ['success' => false, 'code' => 'save_failed', 'message' => 'Échec sauvegarde RDV'];
         }
+         try {
+            error_log('[AMQP] preparing to publish rdv.created for id=' . $savedId);
+            $rdv = $this->rdvRepository->findById($savedId) ?? [];
+
+            $eventBase = [
+                'event_id' => bin2hex(random_bytes(16)),
+                'event_type' => 'rdv.created',
+                'aggregate' => 'rdv',
+                'aggregate_id' => $savedId,
+                'occurred_at' => (new \DateTimeImmutable())->format(\DateTime::ATOM),
+                'payload' => $rdv,
+            ];
+
+            $host = getenv('RABBITMQ_HOST') ?: 'rabbitmq';
+            $port = (int)(getenv('RABBITMQ_PORT') ?: 5672);
+            $user = getenv('RABBITMQ_USER') ?: 'toubi';
+            $pass = getenv('RABBITMQ_PASS') ?: 'toubi';
+            $exchange = 'toubilib.events';
+
+            error_log("[AMQP] connecting to {$host}:{$port} as toubi");
+            $conn = new AMQPStreamConnection($host, $port, $user, $pass);
+            $ch = $conn->channel();
+            $ch->exchange_declare($exchange, 'topic', false, true, false);
+            error_log("[AMQP] exchange declared {$exchange}");
+
+            $patientEvent = $eventBase;
+            $patientEvent['recipient'] = [
+                'type' => 'patient',
+                'id' => $rdv['patient_id'] ?? null,
+                'email' => $rdv['patient_email'] ?? null,
+            ];
+            $msgPatient = new AMQPMessage(json_encode($patientEvent), ['content_type' => 'application/json', 'delivery_mode' => 2]);
+            $ch->basic_publish($msgPatient, $exchange, 'rdv.created.patient.email');
+            error_log('[AMQP] published rdv.created.patient.email');
+
+            $pratEvent = $eventBase;
+            $pratEvent['recipient'] = [
+                'type' => 'praticien',
+                'id' => $rdv['praticien_id'] ?? null,
+            ];
+            $msgPrat = new AMQPMessage(json_encode($pratEvent), ['content_type' => 'application/json', 'delivery_mode' => 2]);
+            $ch->basic_publish($msgPrat, $exchange, 'rdv.created.praticien.email');
+            error_log('[AMQP] published rdv.created.praticien.email');
+
+            $ch->close();
+            $conn->close();
+            error_log('[AMQP] connection closed');
+        } catch (\Throwable $e) {
+            error_log('[AMQP][ERROR] ' . $e->getMessage());
+        }
+
 
         return ['success' => true, 'id' => $savedId];
     }
